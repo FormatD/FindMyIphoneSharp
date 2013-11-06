@@ -1,8 +1,9 @@
+using System;
 namespace FindMyIphoneSharp.Models
 {
     public class LocationInfo
     {
-        public long TimeStamp { get; set; }
+        public DateTime TimeStamp { get; set; }
         public object LocationType { get; set; }
         public bool IsLocationFinished { get; set; }
         public double HorizontalAccuracy { get; set; }

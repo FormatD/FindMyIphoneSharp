@@ -33,8 +33,8 @@ namespace FindMyIphoneSharp
         public string DeviceColor { get; set; }
         public string BatteryStatus { get; set; }
         public string DeviceStatus { get; set; }
-        public long? LockedTimestamp { get; set; }
-        public long? WipedTimestamp { get; set; }
+        public DateTime? LockedTimestamp { get; set; }
+        public DateTime? WipedTimestamp { get; set; }
         public MsgInfo MsgInfo { get; set; }
         public bool LostModeEnabled { get; set; }
         public string LostTimestamp { get; set; }

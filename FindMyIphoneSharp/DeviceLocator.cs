@@ -87,7 +87,7 @@ namespace FindMyIphoneSharp
                 {
                     LocationInfo deviceLocationInfo = new LocationInfo
                     {
-                        TimeStamp = (long)loc["timeStamp"],
+                        TimeStamp = ((long)loc["timeStamp"]).ToDateTime(),
                         LocationType = loc["locationType"],
                         IsLocationFinished = (Boolean)loc["locationFinished"],
                         HorizontalAccuracy = (Double)loc["horizontalAccuracy"],
@@ -106,7 +106,7 @@ namespace FindMyIphoneSharp
                     RemoteLockInfo remoteLockInfo = new RemoteLockInfo
                     {
                         StatusCode = ((String)remLck["statusCode"]),
-                        CreateTimestamp = ((long)remLck["createTimestamp"])
+                        CreateTimestamp = ((long)remLck["createTimestamp"]).ToDateTime(),
                     };
                     device.RemoteLockInfo = (remoteLockInfo);
                 }
@@ -159,15 +159,15 @@ namespace FindMyIphoneSharp
                 device.DeviceColor = ((String)deviceProps["deviceColor"]);
                 device.BatteryStatus = ((String)deviceProps["batteryStatus"]);
                 device.DeviceStatus = ((String)deviceProps["deviceStatus"]);
-                device.LockedTimestamp = ((long?)deviceProps["lockedTimestamp"]);
-                device.WipedTimestamp = ((long?)deviceProps["wipedTimestamp"]);
+                device.LockedTimestamp = ((long?)deviceProps["lockedTimestamp"]).ToDateTime();
+                device.WipedTimestamp = ((long?)deviceProps["wipedTimestamp"]).ToDateTime();
                 JObject msgObj = deviceProps["msg"] as JObject;
                 if (msgObj != null)
                 {
                     MsgInfo msgInfo = new MsgInfo
                     {
                         StatusCode = ((String)msgObj["statusCode"]),
-                        CreateTimestamp = ((long)msgObj["createTimestamp"]),
+                        CreateTimestamp = ((long)msgObj["createTimestamp"]).ToDateTime(),
                         UserText = ((Boolean)msgObj["userText"]),
                         PlaySound = ((Boolean)msgObj["playSound"])
                     };
@@ -181,7 +181,7 @@ namespace FindMyIphoneSharp
                     LostDeviceInfo lostDeviceInfo = new LostDeviceInfo
                     {
                         StatusCode = ((String)lstDev["statusCode"]),
-                        CreateTimestamp = ((long)lstDev["createTimestamp"]),
+                        CreateTimestamp = ((long)lstDev["createTimestamp"]).ToDateTime(),
                         Text = ((String)lstDev["text"]),
                         UserText = ((Boolean)lstDev["userText"]),
                         StopLostMode = ((Boolean)lstDev["stopLostMode"]),
@@ -206,36 +206,18 @@ namespace FindMyIphoneSharp
 
         public Device Locate(Device device)
         {
-            return Locate(device, _defaultLocateTimeout);
-        }
-
-        public Device Locate(Device device, int timeout)
-        {
             if (device == null)
             {
                 throw new ArgumentNullException("device");
             }
-            if (timeout < 0)
-            {
-                throw new ArgumentException("Timeout cannot be a negative value.");
-            }
             String deviceId = device.Id;
             long start = DateTime.Now.Ticks;
-            long timeoutMillis = timeout;
             Device deviceToLocate = device;
-            while (!deviceToLocate.LocationInfo.IsLocationFinished)
+            UpdateDevices();
+            deviceToLocate = FindDevice(deviceId);
+            if (deviceToLocate == null)
             {
-                if (DateTime.Now.Ticks - start > timeoutMillis)
-                {
-                    throw new LocateTimeoutException(timeout);
-                }
-                Thread.Sleep(5);
-                UpdateDevices();
-                deviceToLocate = FindDevice(deviceId);
-                if (deviceToLocate == null)
-                {
-                    throw new DeviceNotFoundException(deviceId);
-                }
+                throw new DeviceNotFoundException(deviceId);
             }
             return deviceToLocate;
         }
@@ -268,7 +250,7 @@ namespace FindMyIphoneSharp
             request.ContentType = "application/x-www-form-urlencoded";
             request.Method = "POST";
 
-            byte[] postData = Encoding.UTF8.GetBytes(body);//postDataStr即为发送的数据，格式还是和上次说的一样 
+            byte[] postData = Encoding.UTF8.GetBytes(body);
             request.ContentLength = postData.Length;
             var requestStream = request.GetRequestStream();
             requestStream.Write(postData, 0, postData.Length);
@@ -282,21 +264,6 @@ namespace FindMyIphoneSharp
             {
                 return ex.Response as HttpWebResponse;
             }
-            //int responseCode = response.StatusCode;
-            //String responseText = connection.getResponseMessage();
-            ////ignores 330 error.
-            ////330 error raises when redirected response did not contains
-            ////any content. (expected: 204 No Contents)
-            //if (responseCode == 330)
-            //{
-            //    responseCode = 204;
-            //}
-
-            //if (responseCode < 200 || responseCode >= 300)
-            //{
-            //    throw new InvalidResponseException(responseText);
-            //}
-
         }
 
         public void SendMessage(Device device, String msg, String title, bool playSound)
