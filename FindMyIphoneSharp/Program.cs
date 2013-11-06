@@ -21,11 +21,11 @@ namespace FindMyIphoneSharp
             while (true)
             {
                 Console.WriteLine("{0},{1}", device.LocationInfo.Longitude, device.LocationInfo.Latitude);
-                Console.WriteLine("Battery :{0} left at {1}", device.BatteryLevel, device.LocationInfo.TimeStamp);
+                Console.WriteLine("Battery :{0} left at {1}", device.BatteryLevel, DateTime.Now);
                 device.LocationInfo.IsLocationFinished = false;
                 try
                 {
-                    locator.Locate(device);
+                    device = locator.Locate(device);
                 }
                 catch (LocateTimeoutException)
                 {
